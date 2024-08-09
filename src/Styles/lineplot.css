@@ -10,7 +10,7 @@
   }
   .layer-toggle-button {
     position: absolute;
-    bottom: 70px;
+    top: 50px;
     right: 10px;
     z-index: 1000;
     padding: 10px 20px;
@@ -38,4 +38,8 @@
   .layer-panel label {
     margin-bottom: 5px;
   }
+  #layer-group{
+    border: none;
+    padding: 0 10px;
   
+  }
