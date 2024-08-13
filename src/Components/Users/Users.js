@@ -51,6 +51,7 @@ const MeasureControl = () => {
 
   return null;
 };
+
 const pointToLayer = (feature, latlng) => {
   return L.circle(latlng, {
     radius: 5,
@@ -63,6 +64,24 @@ const pointToLayer = (feature, latlng) => {
 const Users = () => {
   const [bounds, setBounds] = useState(null);
   const [selectedLayerGroup, setSelectedLayerGroup] = useState('admin');
+  const [selectedLayers, setSelectedLayers] = useState({
+    geoData: true,
+    Interiorlines: true,
+    BO: true,
+    Dots: true,
+    Road41: true,
+    Road42: true,
+    BO41: true,
+    Plotclass: true,
+    Path: true,
+    Schemes: true,
+    TP41: true,
+    Outerpath: true,
+    Plotclass42: true,
+    TP42Plots: true,
+    Schemes42: true,
+    ClassPlot: true,
+  });
 
   useEffect(() => {
     if (geoData && geoData.features && geoData.features.length > 0) {
@@ -71,7 +90,53 @@ const Users = () => {
       const newBounds = L.latLngBounds(coords);
       setBounds(newBounds);
     }
-  }, [geoData]);
+  }, []);
+
+  useEffect(() => {
+    // Reset selected layers when layer group changes
+    if (selectedLayerGroup === 'admin') {
+      setSelectedLayers(prevState => {
+        const allLayers = Object.keys(prevState).reduce((acc, key) => {
+          acc[key] = true;
+          return acc;
+        }, {});
+        return allLayers;
+      });
+    } else if (selectedLayerGroup === 'layer1') {
+      setSelectedLayers(prevState => {
+        const layerNamesLayer1 = [
+          'geoData', 'Interiorlines', 'BO', 'Dots', 'Road41', 'Road42', 'BO41', 'Plotclass'
+        ];
+        const updatedLayers = Object.keys(prevState).reduce((acc, key) => {
+          acc[key] = layerNamesLayer1.includes(key);
+          return acc;
+        }, {});
+        return updatedLayers;
+      });
+    } else if (selectedLayerGroup === 'layer2') {
+      setSelectedLayers(prevState => {
+        const layerNamesLayer2 = [
+          'Path', 'Schemes', 'TP41', 'Outerpath', 'Plotclass42', 'TP42Plots', 'Schemes42', 'ClassPlot'
+        ];
+        const updatedLayers = Object.keys(prevState).reduce((acc, key) => {
+          acc[key] = layerNamesLayer2.includes(key);
+          return acc;
+        }, {});
+        return updatedLayers;
+      });
+    }
+  }, [selectedLayerGroup]);
+
+  const handleLayerGroupChange = (e) => {
+    setSelectedLayerGroup(e.target.value);
+  };
+
+  const handleLayerSelectionChange = (layerName) => {
+    setSelectedLayers(prevState => ({
+      ...prevState,
+      [layerName]: !prevState[layerName],
+    }));
+  };
 
   const onCreated = (e) => {
     const type = e.layerType;
@@ -101,91 +166,150 @@ const Users = () => {
       console.error('Error in onDrawPolyline:', error);
     }
   };
+  const pointToLayer = (feature, latlng) => {
+    return L.circle(latlng, {
+      radius: 5,
+      color: 'green',
+      fillColor: 'green',
+      fillOpacity: 0.5,
+    }).bindPopup(feature.properties.description);
+  };
+  const renderLayerCheckboxes = () => {
+    const layerCheckboxes = [];
+    
+    if (selectedLayerGroup === 'admin') {
+      Object.keys(selectedLayers).forEach(layerName => {
+        layerCheckboxes.push(
+          <label key={layerName}>
+            <input
+              type="checkbox"
+              checked={selectedLayers[layerName]}
+              onChange={() => handleLayerSelectionChange(layerName)}
+            />
+            {layerName}
+          </label>
+        );
+      });
+    } else if (selectedLayerGroup === 'layer1') {
+      const layerNamesLayer1 = [
+        'geoData', 'Interiorlines', 'BO', 'Dots', 'Road41', 'Road42', 'BO41', 'Plotclass'
+      ];
+      layerNamesLayer1.forEach(layerName => {
+        layerCheckboxes.push(
+          <label key={layerName}>
+            <input
+              type="checkbox"
+              checked={selectedLayers[layerName]}
+              onChange={() => handleLayerSelectionChange(layerName)}
+            />
+            {layerName}
+          </label>
+        );
+      });
+    } else if (selectedLayerGroup === 'layer2') {
+      const layerNamesLayer2 = [
+        'Path', 'Schemes', 'TP41', 'Outerpath', 'Plotclass42', 'TP42Plots', 'Schemes42', 'ClassPlot'
+      ];
+      layerNamesLayer2.forEach(layerName => {
+        layerCheckboxes.push(
+          <label key={layerName}>
+            <input
+              type="checkbox"
+              checked={selectedLayers[layerName]}
+              onChange={() => handleLayerSelectionChange(layerName)}
+            />
+            {layerName}
+          </label>
+        );
+      });
+    }
 
-  const handleLayerGroupChange = (e) => {
-    setSelectedLayerGroup(e.target.value);
+    return layerCheckboxes;
   };
 
   return (
     <div style={{ position: 'relative', height: '100vh', width: '100%' }}>
-      <MapContainer
-        style={{ height: '100%', width: '100%' }}
-        center={[23.073162583462938, 72.508005683621647]}
-        zoom={15}
-        scrollWheelZoom={true}
-      >
+   <div className="layer-controls">
+  <select className="layer-group-select" value={selectedLayerGroup} onChange={handleLayerGroupChange}>
+    <option value="admin">Admin</option>
+    <option value="layer1">Layer Group 1</option>
+    <option value="layer2">Layer Group 2</option>
+  </select>
+
+  <div className="layer-checkboxes">
+    {renderLayerCheckboxes()}
+  </div>
+</div>
+
+    <MapContainer
+      center={[51.505, -0.09]}
+      zoom={15}
+      style={{ height: 'calc(100% - 5px)', width: '100%', position: 'absolute' }}
+      doubleClickZoom={false}
+    >
         <TileLayer
+          attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         <FeatureGroup>
           <EditControl
-            position='topright'
+            position="topright"
             onCreated={onCreated}
             onDrawVertex={onDrawVertex}
             onDrawPolyline={onDrawPolyline}
             draw={{
-              rectangle: true,
-              polyline: true,
-              polygon: true,
+              rectangle: false,
               circle: true,
-              marker: true,
+              polyline: false,
+              marker: false,
+              polygon: false,
+              circlemarker: false,
             }}
           />
         </FeatureGroup>
-        {(selectedLayerGroup === 'admin' || selectedLayerGroup === 'layer1') && (
-          <>
-            <GeoJSON data={geoData} style={{ color: 'blue' }} />
-            <GeoJSON data={Interiorlines} style={{ color: 'red' }} />
-            <GeoJSON data={BO} style={{ color: 'purple' }} />
-            {Dots && Dots.features && Dots.features.length > 0 &&
-              <GeoJSON data={Dots} pointToLayer={pointToLayer} />
-            }
-            <GeoJSON data={Road41} style={{ color: 'magenta' }} />
-            <GeoJSON data={Road42} style={{ color: 'brown' }} />
-            <GeoJSON data={BO41} style={{ color: 'cyan' }} />
-            <GeoJSON data={Plotclass} style={{ color: 'yellow' }} />
-          </>
-        )}
 
-        {(selectedLayerGroup === 'admin' || selectedLayerGroup === 'layer2') && (
-          <>
-            <GeoJSON data={Path} style={{ color: 'gray' }} />
-            {Schemes && Schemes.features && Schemes.features.length > 0 &&
-              <GeoJSON data={Schemes} pointToLayer={pointToLayer} />
-            }
-            <GeoJSON data={TP41} style={{ color: 'purple' }} />
-            <GeoJSON data={Outerpath} style={{ color: 'yellow' }} />
-            <GeoJSON data={Plotclass42} style={{ color: 'pink' }} />
-            <GeoJSON data={TP42Plots} style={{ color: 'violet' }} />
-            {Schemes42 && Schemes42.features && Schemes42.features.length > 0 &&
-              <GeoJSON data={Schemes42} pointToLayer={pointToLayer} style={{ color: 'orange', fillColor: 'orange' }} />
-            }
-            <GeoJSON data={ClassPlot} style={{ color: 'brown' }} />
-          </>
-        )}
-
-        <SetViewOnZoom bounds={bounds} />
         <MeasureControl />
+        <SetViewOnZoom bounds={bounds} />
+
+        {selectedLayers.geoData && <GeoJSON data={geoData} style={{ color: 'blue' }} />}
+        {selectedLayers.Interiorlines && <GeoJSON data={Interiorlines} style={{ color: 'red' }} />}
+        {selectedLayers.BO && <GeoJSON data={BO} style={{ color: 'purple' }} />}
+        {selectedLayers.Dots && Dots.features.length > 0 && (
+          <GeoJSON data={Dots} pointToLayer={(feature, latlng) => L.circle(latlng, {
+            radius: 5,
+            color: 'green',
+            fillColor: 'green',
+            fillOpacity: 0.5,
+          }).bindPopup(feature.properties.description)} />
+        )}
+        {selectedLayers.Road41 && <GeoJSON data={Road41} style={{ color: 'magenta' }} />}
+        {selectedLayers.Road42 && <GeoJSON data={Road42} style={{ color: 'brown' }} />}
+        {selectedLayers.BO41 && <GeoJSON data={BO41} style={{ color: 'cyan' }} />}
+        {selectedLayers.Plotclass && <GeoJSON data={Plotclass} style={{ color: 'yellow' }} />}
+
+        {selectedLayers.Path && <GeoJSON data={Path} style={{ color: 'gray' }} />}
+        {selectedLayers.Schemes && Schemes.features.length > 0 && (
+          <GeoJSON data={Schemes} pointToLayer={(feature, latlng) => L.circle(latlng, {
+            radius: 5,
+            color: 'green',
+            fillColor: 'green',
+            fillOpacity: 0.5,
+          }).bindPopup(feature.properties.description)} />
+        )}
+        {selectedLayers.TP41 && <GeoJSON data={TP41} style={{ color: 'purple' }} />}
+        {selectedLayers.Outerpath && <GeoJSON data={Outerpath} style={{ color: 'yellow' }} />}
+        {selectedLayers.Plotclass42 && <GeoJSON data={Plotclass42} style={{ color: 'pink' }} />}
+        {selectedLayers.TP42Plots && <GeoJSON data={TP42Plots} style={{ color: 'violet' }} />}
+        {selectedLayers.Schemes42 && Schemes42.features.length > 0 && (
+          <GeoJSON data={Schemes42} pointToLayer={(feature, latlng) => L.circle(latlng, {
+            radius: 5,
+            color: 'orange',
+            fillColor: 'orange',
+            fillOpacity: 0.5,
+          }).bindPopup(feature.properties.description)} />
+        )}
+        {selectedLayers.ClassPlot && <GeoJSON data={ClassPlot} style={{ color: 'brown' }} />}
       </MapContainer>
-      <div
-        style={{
-          position: 'absolute',
-          top: '10px',
-          left: '50px',
-          zIndex: 1000,
-          backgroundColor: '#fff',
-          padding: '10px',
-          borderRadius: '4px',
-        }}
-      >
-        <label htmlFor="layer-group">Select Layer Group:</label>
-        <select id="layer-group" onChange={handleLayerGroupChange}>
-          <option value="admin">All Layers</option>
-          <option value="layer1">Layer 1</option>
-          <option value="layer2">Layer 2</option>
-        </select>
-      </div>
     </div>
   );
 };

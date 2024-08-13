@@ -1,45 +1,61 @@
+.layer-controls {
+  position: absolute;
+  top: 20px;
+  left: 50px;
+  width: 10%;
+  background-color: white;
+  padding: 10px;
+  z-index: 1000;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
 
-  #root {
-    height: 100vh;
-    width: 100%;
-  }
-  
-  .map-container {
-    height: 100vh;
-    width: 100%;
-  }
-  .layer-toggle-button {
-    position: absolute;
-    top: 50px;
-    right: 10px;
-    z-index: 1000;
-    padding: 10px 20px;
-    background-color: gold;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 15px;
-    font-weight: bold;
-  }
-  
-  .layer-panel {
-    position: absolute;
-    bottom: 110px;
-    right: 10px;
-    z-index: 1000;
-    background-color: white;
-    border: 1px solid #ccc;
-    border-radius: 3px;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .layer-panel label {
-    margin-bottom: 5px;
-  }
-  #layer-group{
-    border: none;
-    padding: 0 10px;
-  
-  }
+.layer-group-select {
+  margin-bottom: 10px;
+}
+
+.layer-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+  height: 200px;
+  overflow-y: auto; 
+}
+
+.layer-checkboxes label {
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.layer-checkboxes input {
+  margin-right: 5px;
+}
+
+.layer-controls select {
+  padding: 4px;
+  margin: 5px 0;
+  width: 100%;
+}
+.label {
+  background: white;
+  padding: 2px;
+  border: 1px solid black;
+  border-radius: 3px;
+}
+.label-tooltip {
+  font-size: 12px;
+  font-weight: bold;
+  color: #333;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px solid #ccc;
+  padding: 2px;
+  border-radius: 3px;
+}
+.feature-name {
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  font-size: 16px;
+  font-weight: bold;
+}
